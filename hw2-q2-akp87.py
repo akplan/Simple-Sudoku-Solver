@@ -1,10 +1,15 @@
 # Homework 2: Simple Sudoku Solver with Local Search
 # Author: Alyssa Plan
 # Date: 07/20/2016
-
+import os
+import cStringIO
 from random import random, randint
 from copy import deepcopy
 
+
+# ===========================
+#     SUDOKU BOARD CLASS
+# ===========================
 class SudokuBoard:
     def __init__(self,board):
         self.board = deepcopy(board)
@@ -38,20 +43,25 @@ class SudokuBoard:
 
     # Prints the board.
     def printBoard(self):
+        stringBoard = cStringIO.StringIO()
         global horizontal_divider
         horizontal_divider= '-------------'
-        print horizontal_divider
+        print >> stringBoard, horizontal_divider
         for i, row in enumerate(self.board):
-            print '|',
+            print >> stringBoard, '|',
             for j, entry in enumerate(row):
-                print entry,
+                print >> stringBoard, str(entry),
                 if(j == 1):
-                    print '|',
-            print '|',
-            print
+                    print >> stringBoard,'|',
+            print >> stringBoard, '|',
+            print >> stringBoard
             if(i == 1):
-                print horizontal_divider
-        print horizontal_divider
+                print >> stringBoard, horizontal_divider
+        print >> stringBoard, horizontal_divider
+        strBoardComplete = stringBoard.getvalue()
+        stringBoard.close()
+        return strBoardComplete
+
     # defines whether a row, column, or box of the row is valid
     def isValid(self, block):
         return 4 == len(set(block))
@@ -115,7 +125,7 @@ def evolve(pop,init_board):
         if randselect > random():
             parents.append(board)
 
-    # crossover
+    # fill in the rest of the population with kids
     num_parents = len(parents)
     free_space = len(pop) - num_parents
     children = []
@@ -127,15 +137,15 @@ def evolve(pop,init_board):
             parent1 = parents[parents1]
             parent2 = parents[parents2]
             half = 2
+            childboard = []
             if 0.49 > random():
-                child = SudokuBoard(parent1.board[:half] + parent2.board[half:])
+                childboard = parent1.board[:half] + parent2.board[half:]
             else:
-                childboard = []
                 for row in parent1.board:
                     currentRow = row[:half]
                     currentRow.extend(row[half:])
                     childboard.append(currentRow)
-                child = SudokuBoard(childboard)
+            child = SudokuBoard(childboard)
             children.append(child)
     parents.extend(children)
 
@@ -154,22 +164,54 @@ def evolve(pop,init_board):
 
 
 
-# Main function. The lack of curly braces still throws me off.
+# Main function. This is where the magic happens.
 def main():
-    # Initialize board with entries
+    # Initialize board with entries.
     init_board = [[1, 0, 3, 0], [0, 0, 0, 0], [2, 0, 4, 0], [0, 0, 0, 0]]
-    pop = generatePopulation(init_board,150)
+
+    # Generate our initial population of solutions.
+    pop = generatePopulation(init_board,200)
+    # determine the most fit of the initial population.
     maxFitness = rankPopulation(pop)[0].fitness
-    print maxFitness
-    rankPopulation(pop)[0].printBoard()
-    for i in xrange(750):
-        pop = evolve(pop,init_board)
-        rankedpop = rankPopulation(pop)
-        if rankedpop[0].fitness < maxFitness:
-            rankedpop[0].printBoard()
-            print 'new number of penalties:',
-            print rankedpop[0].fitness
-            maxFitness = rankedpop[0].fitness
+    rankedpop = rankPopulation(pop)
+    # rankPopulation(pop)[0].printBoard(),
+    # print 'initial lowest number of penalties: ',
+    # print rankPopulation(pop)[0].fitness
 
+    # if we generate 10 generations that has max fitness
+    # stalling at local maximum, kill everybody and start again.
+    death_counter = 0 # our counter
+    armageddon = 10 # our tolerance, something something meaningful variable names
 
-main()
+    for i in xrange(1000):
+        if maxFitness == 0: # we found a solution
+            f = open('hw2-output-akp87.txt','w')
+            strBoard = rankedpop[0].printBoard()
+            f.write(strBoard)
+            f.write('reached an optimal solution in '+str(i)+' generations \n')
+            f.close()
+            return
+        elif death_counter == armageddon: # population stalled, generate new population
+            #print 'everybody dies!'
+            death_counter = 0
+            pop = generatePopulation(init_board,500)
+            maxFitness = rankPopulation(pop)[0].fitness
+            #print 'new max fitness of population: ' + str(maxFitness)
+        else:
+            pop = evolve(pop,init_board)
+            rankedpop = rankPopulation(pop)
+            if rankedpop[0].fitness < maxFitness:
+                #rankedpop[0].printBoard()
+                #print 'new number of penalties:',
+                #print rankedpop[0].fitness
+                maxFitness = rankedpop[0].fitness
+            elif rankedpop[0].fitness == maxFitness: #increment armageddon counter
+                death_counter+=1
+
+    f = open('hw2-output-akp87.txt','w')
+    strBoard = rankedpop[0].printBoard()
+    f.write(strBoard)
+    f.write('reached an unoptimal solution with '+str(rankedpop[0].fitness)+' penalties')
+    f.close()
+
+if __name__ == "__main__": main()
