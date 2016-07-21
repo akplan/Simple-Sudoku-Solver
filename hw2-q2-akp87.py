@@ -109,23 +109,11 @@ def evolve(pop,init_board):
     ranked = rankPopulation(pop)
     retained_length = int(len(ranked)*retain)
     parents = ranked[:retained_length]
-    # print parents
+
     # add random to new population
     for board in ranked[:retained_length]:
         if randselect > random():
             parents.append(board)
-
-    # mutate boards
-    for board in parents:
-        if mutate_prob > random():
-            rand_row = randint(0,len(board.board)-1)
-            rand_col = randint(0,len(board.board[0])-1)
-
-            while(init_board[rand_row][rand_col] != 0):
-                rand_row = randint(0,len(board.board)-1)
-                rand_col = randint(0,len(board.board[0])-1)
-            board.board[rand_row][rand_col] = randint(1,4)
-            board.generateFitness()
 
     # crossover
     num_parents = len(parents)
