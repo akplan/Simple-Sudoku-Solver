@@ -9,4 +9,4 @@ Utilizes local search techniques to solve the following simple 4x4 sudoku puzzle
 |2 |  |4 |  |
 | | | | |
 
-The name is misleading -- the puzzle is simple, not necessarily the solution.
+The name is misleading -- the puzzle is simple, the solver isn't.
