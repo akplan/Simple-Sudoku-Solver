@@ -1,6 +1,6 @@
-# Simple-Sudoku-Solver
+# Simple Sudoku Solver
 Second HW for Intro to Artificial Intelligence.
-Utilizes local search techniques to solve the following 4x4 sudoku puzzle:
+Utilizes local search techniques to solve the following simple 4x4 sudoku puzzle:
 
 
 |1 |  |3 |  |   
@@ -8,3 +8,5 @@ Utilizes local search techniques to solve the following 4x4 sudoku puzzle:
 | | | | |
 |2 |  |4 |  |
 | | | | |
+
+The name is misleading -- the puzzle is simple, not necessarily the solution.
